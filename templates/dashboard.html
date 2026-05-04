@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nifty 200 Screener - Enhanced</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8f9fa;
+            color: #333;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-right {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .user-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            text-decoration: none;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e9ecef;
+            margin-bottom: 30px;
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1.5px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: all 0.3s;
+        }
+
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .run-btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .run-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .run-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status {
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .status.loading {
+            background: #fff3cd;
+            color: #856404;
+            display: block;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            display: block;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            display: block;
+        }
+
+        .results-section {
+            display: none;
+        }
+
+        .results-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-box strong {
+            display: block;
+            font-size: 11px;
+            text-transform: uppercase;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .summary-box .value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .stocks-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow-x: auto;
+            display: block;
+        }
+
+        .stocks-table thead {
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+            display: block;
+        }
+
+        .stocks-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 11px;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .stocks-table tbody {
+            display: block;
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .stocks-table td {
+            padding: 14px 12px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 12px;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .stocks-table tbody tr {
+            display: table;
+            width: 100%;
+            table-layout: fixed;
+        }
+
+        .stocks-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .symbol {
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .sector-badge {
+            display: inline-block;
+            background: #e8eaf6;
+            color: #3f51b5;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .price {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .target {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .profit-positive {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .profit-negative {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .conviction-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .conviction-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 4px;
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 9px;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            color: #28a745;
+            font-weight: 600;
+        }
+
+        .trend-down {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 3px solid #2196F3;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 12px;
+        }
+
+        .info-box strong {
+            color: #1565C0;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+
+        .news-summary {
+            background: #f0f7ff;
+            border-left: 3px solid #667eea;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            max-width: 200px;
+        }
+
+        .news-item {
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .news-title {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .news-reason {
+            color: #666;
+            font-size: 10px;
+        }
+
+        .collapsible {
+            cursor: pointer;
+            user-select: none;
+            color: #667eea;
+            text-decoration: underline;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .details-row {
+            display: none;
+            background: #fafafa;
+        }
+
+        .details-row.show {
+            display: table-row;
+        }
+
+        .details-cell {
+            padding: 12px;
+            border-top: 1px solid #ddd;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 1200px) {
+            .stocks-table {
+                font-size: 10px;
+            }
+            
+            .stocks-table th,
+            .stocks-table td {
+                padding: 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📈 Nifty 200 Complete Screener - Enhanced</h1>
+        <div class="header-right">
+            <div class="user-info">👤 {{ session.username }}</div>
+            <a href="/logout" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Configuration Card -->
+        <div class="card">
+            <h2>⚙️ Configuration</h2>
+
+            <div class="info-box">
+                <strong>✨ Enhanced Features:</strong>
+                Live prices + Expected profit in 1-2 months + News summary for each stock
+            </div>
+
+            <form id="screenerForm">
+                <div class="form-group">
+                    <label for="deepseekKey">DeepSeek API Key *</label>
+                    <input 
+                        type="password" 
+                        id="deepseekKey" 
+                        placeholder="sk-xxx..." 
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="newsApiKey">News API Key (Optional)</label>
+                    <input 
+                        type="password" 
+                        id="newsApiKey" 
+                        placeholder="Leave blank for demo"
+                    >
+                </div>
+
+                <button type="submit" class="run-btn">▶️ Run Enhanced Screener</button>
+                <div class="status" id="status"></div>
+            </form>
+        </div>
+
+        <!-- Results Card -->
+        <div class="card results-section" id="resultsSection">
+            <h2>📊 Screener Results</h2>
+
+            <div class="results-summary" id="resultsSummary"></div>
+
+            <div id="loadingSpinner" class="loading-spinner">
+                <div class="spinner"></div>
+                <p style="margin-top: 16px; color: #666;">Processing news, analyzing stocks, calculating profits...</p>
+            </div>
+
+            <div id="resultsTable" style="display: none; overflow-x: auto;">
+                <table class="stocks-table">
+                    <thead>
+                        <tr>
+                            <th>Stock</th>
+                            <th>Current Price</th>
+                            <th>1-Month Target</th>
+                            <th>1M Profit</th>
+                            <th>2-Month Target</th>
+                            <th>2M Profit</th>
+                            <th>Scores</th>
+                            <th>Trend</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultsBody"></tbody>
+                </table>
+            </div>
+
+            <div id="noResults" class="no-results">
+                <p>No results yet. Run screener with your API key.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const form = document.getElementById('screenerForm');
+        const statusDiv = document.getElementById('status');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultsSummary = document.getElementById('resultsSummary');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        const resultsTable = document.getElementById('resultsTable');
+        const resultsBody = document.getElementById('resultsBody');
+        const noResults = document.getElementById('noResults');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const deepseekKey = document.getElementById('deepseekKey').value.trim();
+            const newsApiKey = document.getElementById('newsApiKey').value.trim();
+
+            if (!deepseekKey) {
+                showStatus('Please enter DeepSeek API key', 'error');
+                return;
+            }
+
+            resultsSection.style.display = 'block';
+            loadingSpinner.style.display = 'block';
+            resultsTable.style.display = 'none';
+            noResults.style.display = 'none';
+            statusDiv.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/run-screener', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        deepseek_api_key: deepseekKey,
+                        news_api_key: newsApiKey
+                    })
+                });
+
+                const data = response.json();
+
+                data.then((responseData) => {
+                    if (!response.ok) {
+                        showStatus(`Error: ${responseData.error}`, 'error');
+                        loadingSpinner.style.display = 'none';
+                        return;
+                    }
+
+                    // Show summary
+                    resultsSummary.innerHTML = `
+                        <div class="summary-box">
+                            <strong>Total News</strong>
+                            <div class="value">${responseData.all_news_count}</div>
+                        </div>
+                        <div class="summary-box">
+                            <strong>Relevant</strong>
+                            <div class="value">${responseData.relevant_news_count}</div>
+                        </div>
+                        <div class="summary-box">
+                            <strong>Sectors</strong>
+                            <div class="value">${responseData.sectors_affected.length}</div>
+                        </div>
+                        <div class="summary-box">
+                            <strong>Stocks</strong>
+                            <div class="value">${responseData.stocks_affected_count}</div>
+                        </div>
+                    `;
+
+                    // Show results
+                    if (responseData.results && responseData.results.length > 0) {
+                        resultsBody.innerHTML = responseData.results.map((stock, idx) => {
+                            const rowId = `row-${idx}`;
+                            const detailsId = `details-${idx}`;
+                            
+                            return `
+                                <tr>
+                                    <td><span class="symbol">${stock.symbol}</span></td>
+                                    <td><span class="price">₹${stock.current_price.toFixed(2)}</span></td>
+                                    <td><span class="target">₹${stock.target_price_1m.toFixed(2)}</span></td>
+                                    <td><span class="profit-positive">+₹${stock.profit_1m_rupees.toFixed(0)}<br>(+${stock.profit_1m_pct}%)</span></td>
+                                    <td><span class="target">₹${stock.target_price_2m.toFixed(2)}</span></td>
+                                    <td><span class="profit-positive">+₹${stock.profit_2m_rupees.toFixed(0)}<br>(+${stock.profit_2m_pct}%)</span></td>
+                                    <td>
+                                        <strong>T:</strong> ${stock.technical_score}/100<br>
+                                        <strong>C:</strong> ${stock.catalyst_score}/100<br>
+                                        <div class="conviction-bar">
+                                            <div class="conviction-bar-fill" style="width: ${stock.conviction}%">
+                                                ${stock.conviction}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td><span class="trend-${stock.ma_trend.toLowerCase()}">${stock.ma_trend}</span></td>
+                                    <td><span class="collapsible" onclick="toggleDetails('${detailsId}')">View →</span></td>
+                                </tr>
+                                <tr class="details-row" id="${detailsId}">
+                                    <td colspan="9" class="details-cell">
+                                        <strong>📰 News Summary:</strong>
+                                        <div class="news-summary">
+                                            ${stock.news_summary.map(news => `
+                                                <div class="news-item">
+                                                    <div class="news-title">${news.title}</div>
+                                                    <div class="news-reason">${news.reason}</div>
+                                                    <div class="news-reason"><strong>Impact:</strong> ${news.impact}</div>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                        <br>
+                                        <strong>📊 Catalyst:</strong> ${stock.catalyst_reason}
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('');
+                        
+                        resultsTable.style.display = 'block';
+                    } else {
+                        noResults.style.display = 'block';
+                    }
+
+                    showStatus('✓ Screener completed successfully!', 'success');
+                });
+            } catch (error) {
+                showStatus(`Error: ${error.message}`, 'error');
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        });
+
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+
+        function toggleDetails(id) {
+            const elem = document.getElementById(id);
+            elem.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>
